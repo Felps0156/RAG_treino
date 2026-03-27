@@ -188,3 +188,4 @@ langgraph.json
 .txt
 docs/
 .langgraph_api/
+vectorstore/

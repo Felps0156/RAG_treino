@@ -37,46 +37,8 @@ embedding = GoogleGenerativeAIEmbeddings(
     model="gemini-embedding-2-preview",
 )
 
-# def get_vectorstore():
-#     docs = load_documents()
-#     if docs:
-#         text_splitter = RecursiveCharacterTextSplitter(
-#             chunk_size=1000,
-#             chunk_overlap=200,
-#         )
-#         splits = text_splitter.split_documents(docs)
-
-#         vectorstore = FAISS.from_documents(
-#             documents=splits, 
-#             embedding=embedding,
-#         )
-        
-#         vectorstore.save_local(VECTOR_STORE_PATH)
-#         return vectorstore
-        
-#     if os.path.exists(os.path.join(VECTOR_STORE_PATH, "index.faiss")):
-#         return FAISS.load_local(
-#             VECTOR_STORE_PATH, 
-#             embedding, 
-#             allow_dangerous_deserialization=True
-#         )
-        
-#     return None
-
-
 def get_vectorstore():
-    # 1. Tenta carregar o banco existente primeiro
-    vectorstore = None
-    if os.path.exists(os.path.join(VECTOR_STORE_PATH, "index.faiss")):
-        vectorstore = FAISS.load_local(
-            VECTOR_STORE_PATH, 
-            embedding, 
-            allow_dangerous_deserialization=True
-        )
-
-    # 2. Verifica se há arquivos novos para processar
     docs = load_documents()
-    
     if docs:
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
@@ -84,17 +46,19 @@ def get_vectorstore():
         )
         splits = text_splitter.split_documents(docs)
 
-        # Se já existe um banco, adicionamos os novos documentos a ele
-        if vectorstore:
-            vectorstore.add_documents(splits)
-        else:
-            # Se não existe, cria um novo
-            vectorstore = FAISS.from_documents(
-                documents=splits, 
-                embedding=embedding,
-            )
+        vectorstore = FAISS.from_documents(
+            documents=splits, 
+            embedding=embedding,
+        )
         
-        # Salva o estado atualizado
         vectorstore.save_local(VECTOR_STORE_PATH)
+        return vectorstore
         
-    return vectorstore
+    if os.path.exists(os.path.join(VECTOR_STORE_PATH, "index.faiss")):
+        return FAISS.load_local(
+            VECTOR_STORE_PATH, 
+            embedding, 
+            allow_dangerous_deserialization=True
+        )
+        
+    return None
