@@ -1,12 +1,20 @@
 import os
 import shutil
 
+from supabase.client import Client, create_client
+from langchain_community.vectorstores import SupabaseVectorStore
 from langchain_community.document_loaders import PyPDFLoader, UnstructuredMarkdownLoader, TextLoader
-from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from config import RAG_FILES_DIR, VECTOR_STORE_PATH
+from config import RAG_FILES_DIR, SUPABASE_SERVICE_KEY, SUPABASE_URL
+
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+
+embedding = GoogleGenerativeAIEmbeddings(
+    model="gemini-embedding-2-preview",
+)
 
 def load_documents():
     docs = []
@@ -38,27 +46,25 @@ embedding = GoogleGenerativeAIEmbeddings(
 )
 
 def get_vectorstore():
+    vectorstore = SupabaseVectorStore(
+        client=supabase,
+        embedding=embedding,
+        table_name="documents",
+        query_name="match_documents",
+    )
+    
+    # 2. Verifica se há arquivos novos para processar
     docs = load_documents()
+    
     if docs:
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
             chunk_overlap=200,
         )
         splits = text_splitter.split_documents(docs)
-
-        vectorstore = FAISS.from_documents(
-            documents=splits, 
-            embedding=embedding,
-        )
         
-        vectorstore.save_local(VECTOR_STORE_PATH)
-        return vectorstore
+        # 3. Adiciona os novos documentos diretamente na nuvem
+        # O LangChain enviará os textos e os embeddings gerados pelo Gemini
+        vectorstore.add_documents(splits)
         
-    if os.path.exists(os.path.join(VECTOR_STORE_PATH, "index.faiss")):
-        return FAISS.load_local(
-            VECTOR_STORE_PATH, 
-            embedding, 
-            allow_dangerous_deserialization=True
-        )
-        
-    return None
+    return vectorstore
