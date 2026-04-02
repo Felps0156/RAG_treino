@@ -14,7 +14,7 @@ def rag_query(query: str) -> str:
     if not vectorstore:
         return "Nenhum documento foi indexado na base RAG."
 
-    docs = vectorstore.similarity_search(query, k=4)
+    docs = vectorstore.similarity_search(query, k=2)
 
     if not docs:
         return "Nenhum documento relevante foi encontrado."
