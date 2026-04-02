@@ -16,36 +16,40 @@ embedding = GoogleGenerativeAIEmbeddings(
     model="gemini-embedding-2-preview",
 )
 
+
 def load_documents():
     docs = []
     processed_dir = os.path.join(RAG_FILES_DIR, 'processed')
     os.makedirs(processed_dir, exist_ok=True)
     
+    # Lista arquivos PDF, TXT e MD
     files = [
         os.path.join(RAG_FILES_DIR, f)
         for f in os.listdir(RAG_FILES_DIR)
-        if f.endswith(".pdf") or f.endswith(".txt") or f.endswith(".md")
+        if f.endswith((".pdf", ".txt", ".md"))
     ]
     
     for file in files:
-        if file.endswith(".pdf"):
-            loader = PyPDFLoader(file)
-        elif file.endswith(".txt"):
-            loader = TextLoader(file)
-        else:
-            loader = UnstructuredMarkdownLoader(file)
+        try:
+            if file.endswith(".pdf"):
+                loader = PyPDFLoader(file)
+            elif file.endswith(".txt"):
+                loader = TextLoader(file)
+            else:
+                loader = UnstructuredMarkdownLoader(file)
+                
+            docs.extend(loader.load())
             
-        docs.extend(loader.load())
-        dest_path = os.path.join(processed_dir, os.path.basename(file))
-        shutil.move(file, dest_path)
+            # Move para a pasta 'processed' após carregar com sucesso
+            dest_path = os.path.join(processed_dir, os.path.basename(file))
+            shutil.move(file, dest_path)
+        except Exception as e:
+            print(f"Erro ao processar {file}: {e}")
         
     return docs
 
-embedding = GoogleGenerativeAIEmbeddings(
-    model="gemini-embedding-2-preview",
-)
-
 def get_vectorstore():
+    # Inicializa o store (isso não depende de ter documentos novos)
     vectorstore = SupabaseVectorStore(
         client=supabase,
         embedding=embedding,
@@ -53,18 +57,16 @@ def get_vectorstore():
         query_name="match_documents",
     )
     
-    # 2. Verifica se há arquivos novos para processar
-    docs = load_documents()
+    # Busca novos documentos
+    new_docs = load_documents()
     
-    if docs:
+    # Só processa o split se a lista não estiver vazia
+    if new_docs:
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
             chunk_overlap=200,
         )
-        splits = text_splitter.split_documents(docs)
-        
-        # 3. Adiciona os novos documentos diretamente na nuvem
-        # O LangChain enviará os textos e os embeddings gerados pelo Gemini
+        splits = text_splitter.split_documents(new_docs)
         vectorstore.add_documents(splits)
         
     return vectorstore
