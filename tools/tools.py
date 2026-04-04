@@ -1,6 +1,6 @@
 from langchain.tools import tool
 
-from vectorstore import get_vectorstore
+from vectorstore import get_vectorstore, ingest_documents
 
 @tool
 def rag_query(query: str) -> str:
@@ -16,21 +16,20 @@ def rag_query(query: str) -> str:
 
     docs = vectorstore.similarity_search(query, k=2)
 
-    if not docs:
-        return "Nenhum documento relevante foi encontrado."
+    return docs
 
-    resultados = []
 
-    for i, doc in enumerate(docs, start=1):
-        source = doc.metadata.get("source", "Fonte desconhecida")
-        page = doc.metadata.get("page", "Página desconhecida")
-        content = doc.page_content.strip()
-
-        resultados.append(
-            f"Resultado {i}\n"
-            f"Fonte: {source}\n"
-            f"Página: {page}\n"
-            f"Conteúdo: {content}\n"
-        )
-
-    return "\n---\n".join(resultados)
+@tool
+def rag_ingest_documents():
+    """
+    USE ESTA FERRAMENTA APENAS quando o usuário solicitar explicitamente 
+    a inclusão de novos documentos na base de conhecimento. 
+    Não a utilize para buscar informações, apenas para indexar novos arquivos.
+    """
+    
+    result = ingest_documents()
+    return result
+    
+    
+    
+    

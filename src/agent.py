@@ -1,6 +1,6 @@
 from langchain.agents import create_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
-from tools.tools import rag_query
+from tools.tools import rag_query, rag_ingest_documents
 
 
 model = ChatGoogleGenerativeAI(model="gemini-3-flash-preview")
@@ -8,6 +8,7 @@ model = ChatGoogleGenerativeAI(model="gemini-3-flash-preview")
 
 tools = [
     rag_query,
+    rag_ingest_documents,
 ]
 
 system_prompt = """

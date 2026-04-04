@@ -50,23 +50,28 @@ def load_documents():
 
 def get_vectorstore():
     # Inicializa o store (isso não depende de ter documentos novos)
-    vectorstore = SupabaseVectorStore(
+    return SupabaseVectorStore(
         client=supabase,
         embedding=embedding,
         table_name="documents",
         query_name="match_documents",
     )
     
+    
+def ingest_documents():
+    vectorstore = get_vectorstore()
     # Busca novos documentos
     new_docs = load_documents()
     
     # Só processa o split se a lista não estiver vazia
     if new_docs:
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
+            chunk_size=500,
             chunk_overlap=200,
         )
         splits = text_splitter.split_documents(new_docs)
         vectorstore.add_documents(splits)
+    else:
+        print("Documento processado")
         
     return vectorstore
