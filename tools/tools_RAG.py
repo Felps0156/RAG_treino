@@ -10,26 +10,18 @@ def rag_query(query: str) -> str:
     Use esta ferramenta antes de responder para garantir que a informação é verídica.
     """
     vectorstore = get_vectorstore()
+    docs = vectorstore.similarity_search(query, k=2)
 
     if not vectorstore:
         return "Nenhum documento foi indexado na base RAG."
 
-    docs = vectorstore.similarity_search(query, k=2)
 
-    return docs
+    return "\n\n".join([f"Fonte: {d.metadata.get('source')}\nConteúdo: {d.page_content}" for d in docs])
 
 
 @tool
-def rag_ingest_documents():
+def rag_ingest_documents(query: str = ""):
     """
-    USE ESTA FERRAMENTA APENAS quando o usuário solicitar explicitamente 
-    a inclusão de novos documentos na base de conhecimento. 
-    Não a utilize para buscar informações, apenas para indexar novos arquivos.
+    USE ESTA FERRAMENTA APENAS para incluir novos documentos na base.
     """
-    
-    result = ingest_documents()
-    return result
-    
-    
-    
-    
+    return ingest_documents()

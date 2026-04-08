@@ -60,18 +60,16 @@ def get_vectorstore():
     
 def ingest_documents():
     vectorstore = get_vectorstore()
-    # Busca novos documentos
     new_docs = load_documents()
     
     # Só processa o split se a lista não estiver vazia
     if new_docs:
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500,
-            chunk_overlap=200,
+            chunk_overlap=100,
         )
         splits = text_splitter.split_documents(new_docs)
         vectorstore.add_documents(splits)
-    else:
-        print("Documento processado")
-        
-    return vectorstore
+        return f"Sucesso: {len(splits)} fragmentos foram adicionados à base de conhecimento."
+    
+    return "Nenhum documento novo foi encontrado para processar."
