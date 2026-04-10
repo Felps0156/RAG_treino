@@ -1,7 +1,7 @@
 from langchain.tools import tool
 from vectorstore import supabase
 
-
+@tool
 def check_inventary(item_name: str) -> str:
     """
     Útil para verificar a quantidade exata e a unidade de medida de um ingrediente no estoque.
@@ -27,7 +27,8 @@ def check_inventary(item_name: str) -> str:
     except Exception as e: #caso o agente crash aqui
         return f"Erro ao acessar o banco de dados: {str(e)}"
     
-    
+
+@tool
 def update_inventary(item_name: str, quantity_stock: int) -> int:
     """
     Útil para cadastrar um ingrediente que NUNCA foi inserido no sistema anteriormente.
@@ -51,7 +52,7 @@ def update_inventary(item_name: str, quantity_stock: int) -> int:
     return update_quantity
 
 
-
+@tool
 def add_item(item_name: str, quantity: int, unit: str) -> str:
     """
     USE ESTA FERRAMENTA APENAS para cadastrar um item que AINDA NÃO EXISTE no estoque.
