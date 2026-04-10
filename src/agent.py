@@ -2,6 +2,7 @@ from langchain.agents import create_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from agents.subagents import stock_subagent_tool, culinary_subagent_tool
+from src.system_prompt import system_prompt_agent_chef
 
 
 model = ChatGoogleGenerativeAI(model="gemini-3-flash-preview")
@@ -14,5 +15,6 @@ subagents = [
 
 agent_chef = create_agent(
     model=model,
-    tools=subagents
+    tools=subagents,
+    system_prompt=system_prompt_agent_chef
 )

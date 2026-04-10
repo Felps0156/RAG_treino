@@ -38,20 +38,13 @@ agent_stock = create_agent(
 
 @tool
 def culinary_subagent_tool(query: str) -> str:
-    """
-    Encaminha perguntas sobre receitas e culinária para o especialista técnico.
-    Use esta ferramenta quando o usuário pedir instruções de preparo.
-    """
-    # Você invoca o grafo e extrai a última mensagem
-    result = agent_culinary.invoke({"messages": [("user", query)]})
-    return result["messages"][-1].content
+    """Encaminha perguntas sobre receitas para o especialista."""
+    # O create_agent retorna a string diretamente
+    result = agent_culinary.invoke({"input": query}) 
+    return result["output"] if isinstance(result, dict) else result
 
 @tool
 def stock_subagent_tool(query: str) -> str:
-    """
-    subagent especializado em gerenciamento de estoque.
-    Use essa ferramenta quando o usuário questionar algo sobre o estoque
-    """
-    
-    result = agent_stock.invoke({"messages": [("user", query)]})
-    return result["messages"][-1].content
+    """Subagent especializado em gerenciamento de estoque."""
+    result = agent_stock.invoke({"input": query})
+    return result["output"] if isinstance(result, dict) else result

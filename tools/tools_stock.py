@@ -11,10 +11,10 @@ def check_inventary(item_name: str) -> str:
     o ingrediente não está cadastrado.
     """
     try:
-        response = supabase.table('inventory').select('*').inlike('item_name', f"%{item_name}%").execute()
+        response = supabase.table('inventory').select('*').ilike('item_name', f"%{item_name}%").execute()
             # supabase.table = buscar a tabela chamada inventory
             # .select: pega tas as colunas daquela tabela(nome, quantidade, unidade)
-            # .inlike: recebe todos os tipos de busca, se buscar por arros ele não importa se é maiuscula ou minuscula
+            # .ilike: recebe todos os tipos de busca, se buscar por arros ele não importa se é maiuscula ou minuscula
             # %: Ele busca todos os itens que contem a palavra. ex: se passar arroz ele busca por arroz branco, arroz integral...
         data = response.data
     
@@ -40,14 +40,14 @@ def update_inventary(item_name: str, quantity_stock: int) -> int:
     - unit: Unidade de medida (ex: 'kg', 'unidades', 'gramas').
     """
     
-    response = supabase.table('inventory').select('*').inlike('item_name', f"%{item_name}%").execute()
+    response = supabase.table('inventory').select('*').ilike('item_name', f"%{item_name}%").execute()
     data = response.data
     
     current_quantity = response.data[0]['quantity']
     
     new_quantity = current_quantity + quantity_stock
     
-    update_quantity = supabase.table('inventory').update({"quantity": new_quantity}).inlike('item_name', f"%{item_name}%")
+    update_quantity = supabase.table('inventory').update({"quantity": new_quantity}).ilike('item_name', f"%{item_name}%").execute()
     
     return update_quantity
 
@@ -61,7 +61,7 @@ def add_item(item_name: str, quantity: int, unit: str) -> str:
     """
     
     try:
-        check_existing = supabase.table('inventory').select('*').inlike("item_name", f"%{item_name}%")
+        check_existing = supabase.table('inventory').select('*').ilike("item_name", f"%{item_name}%")
             
         if check_existing:
             return(f"O item ja esta cadastrado no estoque.")
@@ -72,7 +72,7 @@ def add_item(item_name: str, quantity: int, unit: str) -> str:
             "unit": unit,
         }
         
-        new_stock = supabase.table('id').insert(new_item).execute()
+        new_stock = supabase.table('inventory').insert(new_item).execute()
         return f"O item {item_name} foi adicionado ao estoque com {quantity} {unit}"
     
       
