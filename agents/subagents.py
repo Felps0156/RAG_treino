@@ -39,12 +39,11 @@ agent_stock = create_agent(
 @tool
 def culinary_subagent_tool(query: str) -> str:
     """Encaminha perguntas sobre receitas para o especialista."""
-    # O create_agent retorna a string diretamente
-    result = agent_culinary.invoke({"input": query}) 
-    return result["output"] if isinstance(result, dict) else result
+    result = agent_culinary.invoke({"messages": [("user", query)]}) 
+    return result["messages"][-1].content
 
 @tool
 def stock_subagent_tool(query: str) -> str:
     """Subagent especializado em gerenciamento de estoque."""
-    result = agent_stock.invoke({"input": query})
-    return result["output"] if isinstance(result, dict) else result
+    result = agent_stock.invoke({"messages": [("user", query)]})
+    return result["messages"][-1].content
